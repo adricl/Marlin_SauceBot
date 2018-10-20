@@ -232,10 +232,20 @@
       #define LCD_BACK_CLICKED (buttons & EN_D)
     #endif
 
+    #if BUTTON_EXISTS(RED)
+      #define EN_E _BV(4)
+    #endif
+
+    #if BUTTON_EXISTS(YELLOW)
+      #define EN_F _BV(5)
+    #endif
+
   #endif // NEWPANEL
 
   extern volatile uint8_t buttons;  // The last-checked buttons in a bit array.
   void lcd_buttons_update();
+  void button_yellow_press();
+  void button_red_press();
 
 #else
 
@@ -254,6 +264,19 @@
 #else
   #define LCD_CLICKED false
 #endif
+
+#if defined(EN_E)
+  #define RED_CLICKED (buttons & EN_E)
+#else
+  #define RED_CLICKED false
+#endif
+
+#if defined(EN_F)
+  #define YELLOW_CLICKED (buttons & EN_F)
+#else
+  #define YELLOW_CLICKED false
+#endif
+
 
 #define LCD_MESSAGEPGM(x)      lcd_setstatusPGM(PSTR(x))
 #define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatusPGM(PSTR(x))

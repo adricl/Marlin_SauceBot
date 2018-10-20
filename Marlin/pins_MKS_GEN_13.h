@@ -53,6 +53,9 @@
 
 #include "pins_RAMPS.h"
 
+
+#define BTN_RED 42
+#define BTN_YELLOW 40
 //
 // LCD / Controller
 //

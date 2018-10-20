@@ -428,6 +428,7 @@ uint16_t max_display_update_time = 0;
 
   // Button States
   bool lcd_clicked, wait_for_unclick;
+  bool yellow_clicked_debounce, red_clicked_debounce;
   volatile uint8_t buttons;
   millis_t next_button_update_ms;
   #if ENABLED(REPRAPWORLD_KEYPAD)
@@ -5006,6 +5007,14 @@ void lcd_init() {
       SET_INPUT_PULLUP(BTN_ENC);
     #endif
 
+    //For Buttons red and yellow
+    #if BUTTON_EXISTS(RED)
+      SET_INPUT_PULLUP(BTN_RED);
+    #endif
+    #if BUTTON_EXISTS(YELLOW)
+      SET_INPUT_PULLUP(BTN_YELLOW);
+    #endif
+
     #if ENABLED(REPRAPWORLD_KEYPAD) && DISABLED(ADC_KEYPAD)
       SET_OUTPUT(SHIFT_CLK);
       OUT_WRITE(SHIFT_LD, HIGH);
@@ -5146,6 +5155,24 @@ void lcd_update() {
       }
     }
     else wait_for_unclick = false;
+    
+    //Button Press is inverted
+    if (!RED_CLICKED) {
+      red_clicked_debounce = true;
+    } 
+    else if (red_clicked_debounce) {
+      button_red_press();
+      red_clicked_debounce = false;
+    }
+
+    if (!YELLOW_CLICKED) {
+      yellow_clicked_debounce = true;
+    } 
+    else if (yellow_clicked_debounce) {
+      button_yellow_press();
+      yellow_clicked_debounce = false;
+    }
+
 
     #if BUTTON_EXISTS(BACK)
       if (LCD_BACK_CLICKED) {
@@ -5556,6 +5583,13 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
           if (BUTTON_PRESSED(BACK)) newbutton |= EN_D;
         #endif
 
+        #if BUTTON_EXISTS(RED)
+          if (BUTTON_PRESSED(RED)) newbutton |= EN_E;
+        #endif
+        #if BUTTON_EXISTS(YELLOW)
+          if (BUTTON_PRESSED(YELLOW)) newbutton |= EN_F;
+        #endif
+
         //
         // Directional buttons
         //
@@ -5669,6 +5703,16 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
     }
   }
 
+  void button_red_press() {
+    SERIAL_ECHOPGM("RED CLICKED");
+    enqueue_and_echo_commands_P(PSTR("M21\nM23 red~1.gco\nM24"));
+  }
+
+  void button_yellow_press() {
+    SERIAL_ECHOPGM("YELLOW CLICKED");
+    enqueue_and_echo_commands_P(PSTR("M21\nM23 yellow~1.gco\nM24"));
+  }
+  
   #if (ENABLED(LCD_I2C_TYPE_MCP23017) || ENABLED(LCD_I2C_TYPE_MCP23008)) && ENABLED(DETECT_DEVICE)
     bool lcd_detected() { return lcd.LcdDetected() == 1; }
   #else
