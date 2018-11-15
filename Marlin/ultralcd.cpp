@@ -429,6 +429,7 @@ uint16_t max_display_update_time = 0;
   // Button States
   bool lcd_clicked, wait_for_unclick;
   bool yellow_clicked_debounce, red_clicked_debounce;
+  millis_t yellow_clicked_debounce_millis, red_clicked_debounce_millis;
   volatile uint8_t buttons;
   millis_t next_button_update_ms;
   #if ENABLED(REPRAPWORLD_KEYPAD)
@@ -5156,21 +5157,27 @@ void lcd_update() {
     }
     else wait_for_unclick = false;
     
+    const millis_t ms = millis();
+
     //Button Press is inverted
     if (!RED_CLICKED) {
       red_clicked_debounce = true;
+      red_clicked_debounce_millis = ms + 50;
     } 
-    else if (red_clicked_debounce) {
+    else if (red_clicked_debounce && ELAPSED(ms, red_clicked_debounce_millis)) {
       button_red_press();
       red_clicked_debounce = false;
+      red_clicked_debounce_millis = 0;
     }
 
     if (!YELLOW_CLICKED) {
       yellow_clicked_debounce = true;
+      yellow_clicked_debounce_millis = ms + 50;
     } 
-    else if (yellow_clicked_debounce) {
+    else if (yellow_clicked_debounce && ELAPSED(ms, yellow_clicked_debounce_millis)) {
       button_yellow_press();
       yellow_clicked_debounce = false;
+      yellow_clicked_debounce_millis = 0;
     }
 
 
@@ -5221,7 +5228,7 @@ void lcd_update() {
     }
   #endif
 
-  const millis_t ms = millis();
+  // const millis_t ms = millis();
   if (ELAPSED(ms, next_lcd_update_ms)
     #if ENABLED(DOGLCD)
       || drawing_screen
